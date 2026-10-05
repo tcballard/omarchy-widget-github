@@ -5,7 +5,7 @@ installable Widget Core SDK consumer, with `tcballard` as its editable default.
 
 ![Medium widget: offscreen Qt capture of public data on 5 October 2026](previews/medium.png)
 
-**Development preview: requires the Core API extension in [PR #22](https://github.com/tcballard/omarchy-widget-core/pull/22).**
+**v0.0.1 is a testing preview.** GitHub support is merged into Core; live XPS acceptance is still pending. The first supported widget baseline remains v0.1.0.
 
 Small shows the last 13 weeks and the annual total. Medium shows the complete
 annual graph. Large splits that same year into two readable calendar panels.
@@ -20,21 +20,33 @@ reject this package with an upgrade message. It uses the advanced isolated QML
 path because declarative v1 does not yet support charts or network data. The
 package has no commands, credentials, direct HTTP or private filesystem storage.
 
-First build/install Core from [PR #22](https://github.com/tcballard/omarchy-widget-core/pull/22). Its published v0.0.3 release does not contain this capability yet. From an updated Core checkout on Omarchy:
+Build/install Core at the merged revision below. The older v0.0.3 release does
+not include GitHub support. These commands use a fresh source directory and
+update Core without replacing your saved widget settings:
 
 ```bash
-bash install-local --update
-git clone https://github.com/tcballard/omarchy-widget-github.git
-omarchy-widget install ./omarchy-widget-github
+widget_sources=$(mktemp -d "$HOME/omarchy-github-preview.XXXXXX")
+git clone https://github.com/tcballard/omarchy-widget-core.git "$widget_sources/core"
+git -C "$widget_sources/core" checkout 70712a403d6513893c0e4c6c0e9e177dfba646da
+(cd "$widget_sources/core" && bash install-local --update)
+git clone --branch v0.0.1 --depth 1 https://github.com/tcballard/omarchy-widget-github.git "$widget_sources/github"
+omarchy-widget install "$widget_sources/github"
 omarchy-widget github-permission io.github.tcballard.github-contributions allow
 omarchy-widget add io.github.tcballard.github-contributions
 ```
 
-Use `bash install-local` for a first Core install. To update an existing widget,
-use `omarchy-widget update /path/to/omarchy-widget-github`, then grant access
-again for the new installed version. The manager's Add widgets tab also offers
-Allow/Revoke GitHub access. Configure the username and colours with the gear.
+Follow [Core's prerequisites](https://github.com/tcballard/omarchy-widget-core#install-or-upgrade-core).
+For a first Core installation, use `bash install-local` instead of `--update`
+and run `omarchy restart shell` afterwards, as its installer explains.
+If this widget is already installed, replace `install` with `update`; then grant
+access again for the new installed version. The manager's Add widgets tab also
+offers Allow/Revoke GitHub access. Configure the username and colours with the gear.
 Normal Core Add, Duplicate, Hide/Show, size, workspace and removal controls apply.
+
+On your first test, check all three sizes, daily hover/keyboard counts, changing
+username, theme colours, and settings persistence after `omarchy-widget restart`.
+The displayed total is your **public** contribution count. The live network path,
+workspace switching and suspend/resume still need XPS acceptance.
 
 ## Data and limits
 
@@ -64,13 +76,13 @@ invalid usernames/dates/markup, generation permissions, hidden request gating,
 all sizes, keyboard-ready cells, settings validation, theme colours and data states.
 The production HTTP transport and real desktop focus, hover, suspend/resume,
 workspace switching and installed sandbox still need XPS acceptance. See
-[the Core integration notes](https://github.com/tcballard/omarchy-widget-core/blob/feat/github-contributions-widget/docs/github-contributions.md).
+[the Core integration notes](https://github.com/tcballard/omarchy-widget-core/blob/main/docs/github-contributions.md).
 
 MIT licensed. GitHub is a trademark of GitHub, Inc.; this is an unofficial widget.
 
 ## Development
 
-CI pins Core at `98a2c6a599a9174123282183edad0931bcf79576`, the first published
+CI pins Core at `70712a403d6513893c0e4c6c0e9e177dfba646da`, the merged GitHub
 API-extension commit. Clone Core alongside this repository and check out that
 revision (or a compatible later revision). Then:
 
