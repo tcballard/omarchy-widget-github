@@ -1,0 +1,37 @@
+name: Check GitHub Widget
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  widget:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: widget
+      - uses: actions/checkout@v4
+        with:
+          repository: tcballard/omarchy-widget-core
+          ref: 98a2c6a599a9174123282183edad0931bcf79576
+          path: core
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: dtolnay/rust-toolchain@1.98.1
+      - run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0
+      - run: pip install PySide6==6.11.2
+      - run: cargo build --locked --manifest-path core/Cargo.toml
+      - run: node widget/tests/model.cjs
+      - run: python3 widget/tests/qml.py core
+      - run: python3 widget/tests/package.py core/target/debug/omarchy-widget
+      - run: python3 core/sdk/render_previews.py widget/test-results/empty --package widget
+      - uses: actions/upload-artifact@v4
+        with:
+          name: github-widget-qt-previews
+          path: widget/test-results
