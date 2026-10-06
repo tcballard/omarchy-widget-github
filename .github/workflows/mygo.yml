@@ -1,0 +1,53 @@
+name: MyGo GitHub experiment
+on:
+  push:
+    paths: ['experiments/mygo/**', '.github/workflows/mygo.yml']
+  pull_request:
+    paths: ['experiments/mygo/**', '.github/workflows/mygo.yml']
+permissions:
+  contents: read
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: experiments/mygo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.27.1'
+          cache-dependency-path: experiments/mygo/go.sum
+      - run: go mod verify
+      - run: go test -race ./...
+      - run: go vet ./...
+      - name: Build native Linux experiment
+        run: |
+          mkdir -p build/licenses
+          CGO_ENABLED=0 go build -mod=readonly -tags mygo_noinspector -trimpath -ldflags='-s -w -X github.com/egoist/mygo.production=1' -o build/github-widget-mygo .
+          cp ../../LICENSE build/licenses/widget-LICENSE
+          cp README.md EVIDENCE.md build/
+          go list -m -f '{{if not .Main}}{{.Path}} {{.Dir}}{{end}}' all | while read -r module dir; do
+            [ -n "$dir" ] || continue
+            name=$(printf '%s' "$module" | tr '/' '_')
+            for license in "$dir"/LICENSE* "$dir"/COPYING* "$dir"/PATENTS*; do
+              [ ! -f "$license" ] || cp "$license" "build/licenses/${name}-$(basename "$license")"
+            done
+          done
+          git rev-parse HEAD > build/SOURCE_COMMIT
+          go version > build/TOOLCHAIN
+          (cd build && sha256sum github-widget-mygo > SHA256SUMS)
+      - name: Render labelled synthetic previews
+        run: |
+          mkdir -p test-results
+          for size in small medium large; do
+            build/github-widget-mygo --demo --size "$size" --render "test-results/mygo-$size-demo.png"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: github-widget-mygo-linux-amd64
+          path: experiments/mygo/build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: github-widget-mygo-demo-previews
+          path: experiments/mygo/test-results
