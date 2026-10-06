@@ -3,6 +3,10 @@
 Your GitHub contribution calendar on the Omarchy desktop. A small, independently
 installable Widget Core SDK consumer, with `tcballard` as its editable default.
 
+Trying another renderer? The [MyGo experiment](experiments/mygo/README.md)
+opens the same kind of public contribution calendar in a separate native Go
+window. It is an optional comparison build, not a replacement Widget Core package.
+
 ![Medium widget: offscreen Qt capture of public data on 5 October 2026](previews/medium.png)
 
 **v0.0.1 is a testing preview.** GitHub support is merged into Core; live XPS acceptance is still pending. The first supported widget baseline remains v0.1.0.
